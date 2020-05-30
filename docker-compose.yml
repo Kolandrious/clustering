@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  app:
+    container_name: diplom_node
+    restart: always
+    build:
+      context: .
+      dockerfile: "Dockerfile.dev"
+    environment:
+      - DOCKER_ENV=true
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - 3000:3000
+    links:
+      - mongo
+  mongo:
+    container_name: diplom_mongo
+    image: mongo:4.2.6
+    ports:
+      - 27017:27017
+    # volumes:
+    #   - ./db:/data/db
+

@@ -1,0 +1,14 @@
+<body style="font-family: monospace;">
+  Hello
+  <table>
+      <% for (var i=0; i < points.length; i++) { const point = points[i] %>
+        <tr id="<%= point._id %>">
+          <td style="color: grey"><%= (i + 1) %></td>
+          <td style="color: grey"><%= point._id %></td>
+          <td><%= point.coordinates[1] %></td>
+          <td><%= point.coordinates[0] %></td>
+          <td><%= (point.distance / 1000).toFixed(2) %>km</td>
+        </tr>
+      <% } %>
+  </table>
+</body>

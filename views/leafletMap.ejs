@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin=""
+  ></script>
+  <script src="/leafletProviders.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    const map = L.map('map').setView([ 52.368, 4.887 ], 7);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      noWrap: true,
+    }).addTo(map);
+    function getLengthBetween2Points (a, b) {
+      return Math.abs(Math.max(a, b) === a ? a - b : b - a);
+    };
+
+    const safelyGetBounds = () => {
+      const bounds = map.getBounds();
+      return {
+        _northEast: {
+          lat: bounds._northEast.lat,
+          lng: bounds._northEast.lng > 180 ? 180 : bounds._northEast.lng,
+        },
+        _southWest: {
+          lat: bounds._southWest.lat,
+          lng: bounds._southWest.lng < -180 ? -180 : bounds._southWest.lng,
+        },
+      }
+    };
+
+    async function sendBounds(bounds) {
+      try {
+        const data = {
+          northEastLat: bounds._northEast.lat,
+          northEastLng: bounds._northEast.lng,
+          southWestLat: bounds._southWest.lat,
+          southWestLng: bounds._southWest.lng,
+        };
+        const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[ key ])).join('&');
+        const result = await fetch(`/box?${formBody}`).then(r => r.json());
+        // console.log(result);
+        return result;
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    let markers = [];
+    const setMarkers = async bounds => {
+      console.log(bounds);
+      const points = await sendBounds(bounds);
+      markers.forEach(marker => map.removeLayer(marker));
+      markers = points.map(point => (
+        L
+          .marker([point.lat, point.long])
+          .bindPopup(point.id)
+          .addTo(map)
+      ));
+    }
+
+    const drawPolygon = bounds => {
+      const northEastLat = bounds._northEast.lat;
+      const northEastLng = bounds._northEast.lng;
+      const southWestLat = bounds._southWest.lat;
+      const southWestLng = bounds._southWest.lng;
+
+      let coordinates = [
+        [ +northEastLat, +southWestLng ],
+        [ +northEastLat, +northEastLng ],
+        [ +southWestLat, +northEastLng ],
+        [ +southWestLat, +southWestLng ],
+        [ +northEastLat, +southWestLng ],
+      ];
+      const lengthLeftToRight = getLengthBetween2Points(southWestLng, northEastLng);
+      console.log("length " + lengthLeftToRight);
+      if (lengthLeftToRight >= 180) {
+        const partialLengthForNewPoint = lengthLeftToRight / 3;
+        const mediatePointsLeftToRight = [
+          [ +northEastLat, +southWestLng + partialLengthForNewPoint ],
+          [ +northEastLat, +southWestLng + 2 * partialLengthForNewPoint ]
+        ];
+        const mediatePointsRightToLeft = [
+          [ +southWestLat, +northEastLng - partialLengthForNewPoint ],
+          [ +southWestLat, +northEastLng - 2 * partialLengthForNewPoint ],
+        ];
+        coordinates = [
+          coordinates[ 0 ],
+          ...mediatePointsLeftToRight,
+          [ +northEastLat, +northEastLng ],
+          [ +southWestLat, +northEastLng ],
+          ...mediatePointsRightToLeft,
+          [ +southWestLat, +southWestLng ],
+          [ +northEastLat, +southWestLng ],
+        ];
+        console.log(coordinates);
+      }
+      L.polygon(coordinates).addTo(map);
+    };
+
+    setMarkers(safelyGetBounds());
+    map.on('click', e => {
+      console.log(e.latlng);
+    });
+    
+    map.on('dragend', () => {
+      setMarkers(safelyGetBounds());
+      // drawPolygon(safelyGetBounds());
+    });
+  </script>
+</body>
+</html>
