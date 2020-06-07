@@ -1,32 +1,16 @@
 import mongoose from 'mongoose';
-import RbushDefault from 'rbush';
 import knn from 'rbush-knn';
-import { connectMongo } from '../src/utils.js';
-import { Points, IPoint } from '../src/models';
+import {
+  connectMongo,
+  RBush,
+} from '../utils';
+import { Points, IPoint } from '../models';
 
 interface ICluster {
   type: 'Point',
   coordinates: number[],
   includes: string[],
   length: number,
-}
-
-class RBush<T> extends RbushDefault<T> {
-  toBBox({ coordinates }: IPoint) {
-    return {
-      minX: coordinates[0],
-      minY: coordinates[1],
-      maxX: coordinates[0],
-      maxY: coordinates[1],
-    };
-  }
-
-  compareMinX(a: IPoint, b: IPoint) {
-    return a.coordinates[0] - b.coordinates[0];
-  }
-  compareMinY(a: IPoint, b: IPoint) {
-    return a.coordinates[1] - b.coordinates[1];
-  }
 }
 
 const getRandomPoint = (tree: RBush) => {

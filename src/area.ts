@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { Points } from './models.js';
+import { Points } from './models';
 
 export default (app: Express) => app.route('/area')
   .get(async (req, res) => {

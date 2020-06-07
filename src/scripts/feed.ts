@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import feed from '../feed.js';
-import { connectMongo } from '../src/utils.js';
+import feed from '../../feed';
+import { connectMongo } from '../utils';
 
 (async () => {
   try {

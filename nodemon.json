@@ -1,0 +1,11 @@
+{
+  "watch": [
+    "*"
+  ],
+  "ext": "ts",
+  "ignore": [
+    "node_modules",
+    "tsbuild"
+  ],
+  "exec": "yarn ts ./index"
+}

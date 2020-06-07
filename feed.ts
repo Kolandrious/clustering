@@ -1,9 +1,9 @@
 import { Points } from './src/models';
 
-export const generatePoint = (id?: string | number) => {
+export const generatePoint = (_id?: string | number) => {
   const random1 = Math.random();
   const negative1 = Math.random() > 0.5;
-  const lat = ((negative1 ? -random1 : random1) * 90).toFixed(6);
+  const lat = ((negative1 ? -random1 : random1) * 85).toFixed(6);
   const random2 = Math.random();
   const negative2 = Math.random() > 0.5;
   const long = ((negative2 ? -random2 : random2) * 180).toFixed(6);

@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { Points } from './models.js';
+import { Points } from './models';
 
 const getLengthBetween2Points = (a: number, b: number) => Math.abs(Math.max(a, b) === a ? a - b : b - a);
 

@@ -14,7 +14,6 @@ const pointsSchema = new mongoose.Schema({
   },
   coordinates: {
     type: [ Number ],
-    // index: { type: '2dsphere', sparse: false },
     required: true,
   }
 });
